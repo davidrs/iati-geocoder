@@ -68,7 +68,7 @@ module TextGeocoder
 
 						# TODO: adjust code to keep groups of uppercase words as a single entity		
 					
-						query=desc.text.scan(/([[:upper:]][[:lower:]]+\s?)+/)
+						query=desc.text.scan(/([A-Z][a-z]+[(\s|\-)]?[A-Z][a-z]+)|([A-Z][a-z]+)/)
 						query.each do |x|
 							x[0].strip!
 						end
@@ -87,7 +87,11 @@ module TextGeocoder
 												# TODO: If a geocode request returns multiple responses
 												#			Throw out any results that do not contain the search term in address
 												#			If 2 responses have the exact same address just merge them.
-											hash[:positions] << { :location => q[0].strip, :latitude => c.latitude, :longitude => c.longitude }
+											if c.address.downcase.scan(q[0].strip.downcase)
+
+												hash[:positions] << { :location => q[0].strip, :latitude => c.latitude, :longitude => c.longitude }
+
+											end
 										end
 									end
 								end
