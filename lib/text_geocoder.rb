@@ -70,26 +70,28 @@ module TextGeocoder
 					
 						query=desc.text.scan(/([A-Z][a-z]+[(\s|\-)]?[A-Z][a-z]+)|([A-Z][a-z]+)/)
 						query.each do |x|
+							next if x[0].nil?
 							x[0].strip!
 						end
 						query.uniq!
 						hash[:positions]=[]
 						query.each do |q|
-						if whitelist.include? q[0].strip and !blacklist.include? q[0].strip 
+							next if q[0].nil?
+							if whitelist.include? q[0].strip and !blacklist.include? q[0].strip 
 								coords=Geocoder.search("#{q[0].strip} #{country}")
 								sleep 0.20
 								
 								unless coords.nil?
-									coords.each do |c|
+									coords.each_with_index do |c,index|
 
 										if c.country == country
 										
 												# TODO: If a geocode request returns multiple responses
 												#			Throw out any results that do not contain the search term in address
 												#			If 2 responses have the exact same address just merge them.
-											if c.address.downcase.scan(q[0].strip.downcase)
+											if c.address.downcase.scan(q[0].strip.downcase) && c.address != coords[index-1].address
 
-												hash[:positions] << { :location => q[0].strip, :latitude => c.latitude, :longitude => c.longitude }
+												hash[:positions] << { :location => q[0].strip, :latitude => c.latitude, :longitude => c.longitude, :address => c.address }
 
 											end
 										end
@@ -102,7 +104,7 @@ module TextGeocoder
 						if hash[:positions].empty?
 							coords=Geocoder.search("#{country}")
 							unless coords.nil?
-								hash[:positions] << { :location => country, :latitude => coords[0].latitude, :longitude => coords[0].longitude }
+								hash[:positions] << { :location => country, :latitude => coords[0].latitude, :longitude => coords[0].longitude, :address => nil }
 								hash[:precision] = "country"
 							end
 						else
@@ -113,7 +115,7 @@ module TextGeocoder
 				end
 			else
 				hash[:positions]=[]
-				hash[:precision]="none"
+				hash[:precision]=nil
 			end
 			results << hash
 		end # end of loop
