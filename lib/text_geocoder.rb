@@ -68,32 +68,26 @@ module TextGeocoder
 
 						# TODO: adjust code to keep groups of uppercase words as a single entity		
 					
-						query=desc.text.scan(/([A-Z][a-z]+[(\s|\-)]?[A-Z][a-z]+)|([A-Z][a-z]+)/)
+						query=desc.text.scan(/([[:upper:]][[:lower:]]+\s?)+/)
 						query.each do |x|
-							next if x[0].nil?
 							x[0].strip!
 						end
 						query.uniq!
 						hash[:positions]=[]
 						query.each do |q|
-							next if q[0].nil?
-							if whitelist.include? q[0].strip and !blacklist.include? q[0].strip 
+						if whitelist.include? q[0].strip and !blacklist.include? q[0].strip 
 								coords=Geocoder.search("#{q[0].strip} #{country}")
 								sleep 0.20
 								
 								unless coords.nil?
-									coords.each_with_index do |c,index|
+									coords.each do |c|
 
 										if c.country == country
 										
 												# TODO: If a geocode request returns multiple responses
 												#			Throw out any results that do not contain the search term in address
 												#			If 2 responses have the exact same address just merge them.
-											if c.address.downcase.scan(q[0].strip.downcase) && c.address != coords[index-1].address
-
-												hash[:positions] << { :location => q[0].strip, :latitude => c.latitude, :longitude => c.longitude, :address => c.address }
-
-											end
+											hash[:positions] << { :location => q[0].strip, :latitude => c.latitude, :longitude => c.longitude }
 										end
 									end
 								end
@@ -104,7 +98,7 @@ module TextGeocoder
 						if hash[:positions].empty?
 							coords=Geocoder.search("#{country}")
 							unless coords.nil?
-								hash[:positions] << { :location => country, :latitude => coords[0].latitude, :longitude => coords[0].longitude, :address => nil }
+								hash[:positions] << { :location => country, :latitude => coords[0].latitude, :longitude => coords[0].longitude }
 								hash[:precision] = "country"
 							end
 						else
@@ -115,10 +109,12 @@ module TextGeocoder
 				end
 			else
 				hash[:positions]=[]
-				hash[:precision]=nil
+				hash[:precision]="none"
 			end
 			results << hash
 		end # end of loop
+		number_of_results={:countries => results.select { |r| r[:precision] == "country" }.count, :not_found => results.select { |r| r[:precision] == nil }.count, :city_or_region => results.select { |r| r[:precision] == "region-or-city" }.count }
+		results << number_of_results
 		if options[:format] == :json
 			return results.to_json
 		else

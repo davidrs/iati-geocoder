@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'TextGeocoder'
-  s.version     = '0.0.3'
+  s.version     = '0.0.4'
   s.date        = '2013-08-25'
   s.summary     = "A module for geocoding an unstructured body of text."
   s.description = "This module parses a body of unstructured text, pulls out all city and region names, and geo-encodes them."
