@@ -67,3 +67,10 @@ Psuedo Code
 Authors
 -------
 David Rust-Smith, Paulo, Berk, Phil
+
+TODOs
+=====
+
+* Currently the total count of # countries, #not found, and # city region is appended as last element of array. Should instead be outside fo the array.
+* Return amd1 or amd2 precision info.
+* Some code was lost during last second revert for our pitch. Try to find and carry it back over.
