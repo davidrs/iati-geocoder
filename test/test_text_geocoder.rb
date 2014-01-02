@@ -1,6 +1,8 @@
-require 'text_geocoder'
+# require 'text_geocoder'
+require '../lib/text_geocoder.rb'
 
-contents = File.open("iati-data/PassTestIATI.xml", "rb").read
+#PassTestIATI.xml
+contents = File.open("iati-data/aidData_malawai_large.xml", "rb").read
 
 # returns json
 puts TextGeocoder::geocode(contents, format: :json)  

@@ -77,8 +77,8 @@ module TextGeocoder
 						hash[:positions]=[]
 						query.each do |q|
 						if whitelist.include? q[0].strip and !blacklist.include? q[0].strip
-								coords=Geocoder.search("#{q[0].strip} #{country}")
-								sleep 0.40
+								coords = Geocoder.search("#{q[0].strip} #{country}")
+								sleep 0.50
 
 								unless coords.nil?
 									coords.each do |c|
@@ -99,8 +99,14 @@ module TextGeocoder
 						if hash[:positions].empty?
 							coords=Geocoder.search("#{country}")
 							unless coords.nil?
-								hash[:positions] << { :location => country, :latitude => coords[0].latitude, :longitude => coords[0].longitude }
-								hash[:precision] = "country"
+								# if nil, then google timeout probably.
+								if coords[0].nil?
+									#return what we have so far and stop.
+									return return_results(results,options)
+								else
+									hash[:positions] << { :location => country, :latitude => coords[0].latitude, :longitude => coords[0].longitude }
+									hash[:precision] = "country"
+								end
 							end
 						else
 							hash[:precision] = "region-or-city"
@@ -114,6 +120,10 @@ module TextGeocoder
 			end
 			results << hash
 		end # end of loop
+		return return_results(results,options)
+	end
+
+	def return_results(results,options)
 		number_of_results={:countries => results.select { |r| r[:precision] == "country" }.count, :not_found => results.select { |r| r[:precision] == nil }.count, :city_or_region => results.select { |r| r[:precision] == "region-or-city" }.count }
 		results << number_of_results
 		if options[:format] == :json
